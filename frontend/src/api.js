@@ -25,11 +25,21 @@ export const createTask = async (title) => {
   return res.json();
 };
 
-export const updateTask = async (id, completed) => {
+export const toggleTask = async (id, completed) => {
   const res = await fetch(`${BASE}/tasks/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ completed }),
+  });
+  if (!res.ok) throw new Error(await parseError(res, "Failed to update task"));
+  return res.json();
+};
+
+export const updateTaskTitle = async (id, title) => {
+  const res = await fetch(`${BASE}/tasks/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
   });
   if (!res.ok) throw new Error(await parseError(res, "Failed to update task"));
   return res.json();

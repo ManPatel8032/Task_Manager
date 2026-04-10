@@ -1,58 +1,97 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from datetime import datetime, timezone
 import uuid
-from datetime import datetime
+
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field, field_validator
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    # Allow local frontend dev servers on any port.
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 tasks = {}
 
-class TaskCreate(BaseModel):
+
+class Task(BaseModel):
+    id: str
     title: str
+    completed: bool
+    createdAt: str
+
+
+class TaskCreate(BaseModel):
+    title: str = Field(..., min_length=1)
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        title = value.strip()
+        if not title:
+            raise ValueError("Title cannot be empty")
+        return title
+
 
 class TaskUpdate(BaseModel):
-    completed: bool
+    completed: bool | None = None
+    title: str | None = None
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        title = value.strip()
+        if not title:
+            raise ValueError("Title cannot be empty")
+        return title
 
 @app.get("/")
 def root():
     return {"message": "Task Manager API is running", "endpoints": ["/tasks", "/docs"]}
 
-@app.get("/tasks")
-def get_tasks():
+@app.get("/tasks", response_model=list[Task])
+def get_tasks() -> list[Task]:
     return sorted(tasks.values(), key=lambda t: t["createdAt"], reverse=True)
 
-@app.post("/tasks", status_code=201)
-def create_task(task: TaskCreate):
-    if not task.title.strip():
-        raise HTTPException(status_code=400, detail="Title cannot be empty")
+@app.post("/tasks", response_model=Task, status_code=status.HTTP_201_CREATED)
+def create_task(task: TaskCreate) -> Task:
     task_id = str(uuid.uuid4())
     new_task = {
         "id": task_id,
-        "title": task.title.strip(),
+        "title": task.title,
         "completed": False,
-        "createdAt": datetime.now().isoformat()
+        "createdAt": datetime.now(timezone.utc).isoformat(),
     }
     tasks[task_id] = new_task
     return new_task
 
-@app.patch("/tasks/{task_id}")
-def update_task(task_id: str, update: TaskUpdate):
+@app.patch("/tasks/{task_id}", response_model=Task)
+def update_task(task_id: str, update: TaskUpdate) -> Task:
     if task_id not in tasks:
-        raise HTTPException(status_code=404, detail="Task not found")
-    tasks[task_id]["completed"] = update.completed
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
+    if update.completed is None and update.title is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Provide at least one field to update",
+        )
+
+    if update.completed is not None:
+        tasks[task_id]["completed"] = update.completed
+    if update.title is not None:
+        tasks[task_id]["title"] = update.title
+
     return tasks[task_id]
 
-@app.delete("/tasks/{task_id}")
+@app.delete("/tasks/{task_id}", status_code=status.HTTP_200_OK)
 def delete_task(task_id: str):
     if task_id not in tasks:
-        raise HTTPException(status_code=404, detail="Task not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
     del tasks[task_id]
     return {"message": "Task deleted"}

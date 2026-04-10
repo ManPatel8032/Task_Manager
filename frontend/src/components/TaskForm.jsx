@@ -1,12 +1,15 @@
 import { useState } from "react";
 
-function TaskForm({ onAdd }) {
+function TaskForm({ onAdd, disabled }) {
   const [title, setTitle] = useState("");
 
-  const handleSubmit = () => {
-    if (!title.trim()) return;
-    onAdd(title.trim());
-    setTitle("");
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+    if (!title.trim() || disabled) return;
+    const wasAdded = await onAdd(title.trim());
+    if (wasAdded) {
+      setTitle("");
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -14,16 +17,19 @@ function TaskForm({ onAdd }) {
   };
 
   return (
-    <div className="task-form">
+    <form className="task-form" onSubmit={handleSubmit}>
       <input
         type="text"
         placeholder="Add a new task..."
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
-      <button onClick={handleSubmit}>Add</button>
-    </div>
+      <button type="submit" disabled={disabled || !title.trim()}>
+        {disabled ? "Adding..." : "Add"}
+      </button>
+    </form>
   );
 }
 

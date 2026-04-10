@@ -101,3 +101,38 @@ Only attempt bonus items if the core requirements are complete.
 ---
 
 > **Submission note:** Please submit a working solution that reflects your normal coding approach for a small feature. We value clarity, correctness, and sensible trade-offs.
+
+---
+
+## Local Run Commands
+
+### Backend
+
+```bash
+cd backend
+uv run uvicorn main:app --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Run Backend Tests
+
+```bash
+cd backend
+uv run pytest
+```
+
+### Docker (Bonus)
+
+```bash
+docker compose up --build
+```
+
+- Frontend: [http://localhost:5173](http://localhost:5173)
+- Backend: [http://localhost:8000](http://localhost:8000)
