@@ -12,8 +12,9 @@ services:
       context: ./frontend
     ports:
       - "5173:5173"
+    # Browser runs on your machine: it must call localhost, not the Docker service name.
     environment:
-      - VITE_API_URL=http://backend:8000
+      - VITE_API_URL=http://127.0.0.1:8000
     depends_on:
       - backend
     volumes:

@@ -1,8 +1,14 @@
 import TaskItem from "./TaskItem";
 
-function TaskList({ tasks, onToggle, onDelete, onEditTitle, disabled }) {
+const emptyMessage = (filter) => {
+  if (filter === "active") return "No active tasks. Nice work!";
+  if (filter === "completed") return "No completed tasks yet.";
+  return "No tasks yet. Add one above!";
+};
+
+function TaskList({ tasks, filter, onToggle, onDelete, onEditTitle, disabled }) {
   if (tasks.length === 0) {
-    return <p className="empty">No tasks yet. Add one above!</p>;
+    return <p className="empty">{emptyMessage(filter)}</p>;
   }
 
   return (

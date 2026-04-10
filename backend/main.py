@@ -7,15 +7,15 @@ from pydantic import BaseModel, Field, field_validator
 
 app = FastAPI()
 
+# CORS: allow any local dev port (Vite may use 5173, 5174, etc.). Browser preflight must succeed.
 app.add_middleware(
     CORSMiddleware,
-    # Allow local frontend dev servers on any port.
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-tasks = {}
+tasks: dict[str, dict] = {}
 
 
 class Task(BaseModel):
@@ -51,13 +51,16 @@ class TaskUpdate(BaseModel):
             raise ValueError("Title cannot be empty")
         return title
 
+
 @app.get("/")
 def root():
     return {"message": "Task Manager API is running", "endpoints": ["/tasks", "/docs"]}
 
+
 @app.get("/tasks", response_model=list[Task])
 def get_tasks() -> list[Task]:
     return sorted(tasks.values(), key=lambda t: t["createdAt"], reverse=True)
+
 
 @app.post("/tasks", response_model=Task, status_code=status.HTTP_201_CREATED)
 def create_task(task: TaskCreate) -> Task:
@@ -70,6 +73,7 @@ def create_task(task: TaskCreate) -> Task:
     }
     tasks[task_id] = new_task
     return new_task
+
 
 @app.patch("/tasks/{task_id}", response_model=Task)
 def update_task(task_id: str, update: TaskUpdate) -> Task:
@@ -88,6 +92,7 @@ def update_task(task_id: str, update: TaskUpdate) -> Task:
         tasks[task_id]["title"] = update.title
 
     return tasks[task_id]
+
 
 @app.delete("/tasks/{task_id}", status_code=status.HTTP_200_OK)
 def delete_task(task_id: str):

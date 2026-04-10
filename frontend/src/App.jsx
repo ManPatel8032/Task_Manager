@@ -19,12 +19,11 @@ function App() {
   const [filter, setFilter] = useState("all");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load cached tasks first so the UI is immediately useful offline.
   useEffect(() => {
-    const cachedTasks = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (cachedTasks) {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (cached) {
       try {
-        setTasks(JSON.parse(cachedTasks));
+        setTasks(JSON.parse(cached));
       } catch {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
       }
@@ -38,7 +37,7 @@ function App() {
 
   const getReadableError = (err, fallback) => {
     if (err?.message?.includes("Failed to fetch")) {
-      return "Cannot connect to the backend. Please check if FastAPI is running and refresh.";
+      return "Cannot reach the API. Start the backend (uv run uvicorn main:app --reload in backend/) and ensure it listens on port 8000, then use Retry.";
     }
     return err?.message || fallback;
   };
@@ -50,7 +49,7 @@ function App() {
       const data = await getTasks();
       setTasks(data);
     } catch (err) {
-      setError(getReadableError(err, "Could not load tasks. Is the backend running?"));
+      setError(getReadableError(err, "Could not load tasks."));
     } finally {
       setLoading(false);
     }
@@ -76,9 +75,7 @@ function App() {
       setIsSaving(true);
       setError(null);
       const updated = await toggleTask(id, completed);
-      setTasks((prev) =>
-        prev.map((task) => (task.id === id ? updated : task))
-      );
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
     } catch (err) {
       setError(getReadableError(err, "Failed to update task."));
     } finally {
@@ -87,14 +84,12 @@ function App() {
   };
 
   const handleDelete = async (id) => {
-    const shouldDelete = window.confirm("Are you sure you want to delete this task?");
-    if (!shouldDelete) return;
-
+    if (!window.confirm("Delete this task?")) return;
     try {
       setIsSaving(true);
       setError(null);
       await deleteTask(id);
-      setTasks((prev) => prev.filter((task) => task.id !== id));
+      setTasks((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       setError(getReadableError(err, "Failed to delete task."));
     } finally {
@@ -107,9 +102,7 @@ function App() {
       setIsSaving(true);
       setError(null);
       const updated = await updateTaskTitle(id, title);
-      setTasks((prev) =>
-        prev.map((task) => (task.id === id ? updated : task))
-      );
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
       return true;
     } catch (err) {
       setError(getReadableError(err, "Failed to update task."));
@@ -125,7 +118,7 @@ function App() {
     return true;
   });
 
-  const remainingCount = tasks.filter((task) => !task.completed).length;
+  const remainingCount = tasks.filter((t) => !t.completed).length;
 
   return (
     <div className="container">
@@ -134,6 +127,7 @@ function App() {
       <div className="toolbar">
         <div className="filters" role="group" aria-label="Filter tasks">
           <button
+            type="button"
             className={filter === "all" ? "active" : ""}
             onClick={() => setFilter("all")}
             disabled={isSaving}
@@ -141,6 +135,7 @@ function App() {
             All
           </button>
           <button
+            type="button"
             className={filter === "active" ? "active" : ""}
             onClick={() => setFilter("active")}
             disabled={isSaving}
@@ -148,6 +143,7 @@ function App() {
             Active
           </button>
           <button
+            type="button"
             className={filter === "completed" ? "active" : ""}
             onClick={() => setFilter("completed")}
             disabled={isSaving}
@@ -160,7 +156,12 @@ function App() {
       {error && (
         <div className="error-panel" role="alert">
           <p className="error">{error}</p>
-          <button className="retry-btn" onClick={fetchTasks} disabled={loading || isSaving}>
+          <button
+            type="button"
+            className="retry-btn"
+            onClick={fetchTasks}
+            disabled={loading || isSaving}
+          >
             Retry
           </button>
         </div>
@@ -170,6 +171,7 @@ function App() {
       ) : (
         <TaskList
           tasks={filteredTasks}
+          filter={filter}
           onToggle={handleToggle}
           onDelete={handleDelete}
           onEditTitle={handleEditTitle}

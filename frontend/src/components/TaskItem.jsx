@@ -5,16 +5,14 @@ function TaskItem({ task, onToggle, onDelete, onEditTitle, disabled }) {
   const [draftTitle, setDraftTitle] = useState(task.title);
 
   const handleSave = async () => {
-    const nextTitle = draftTitle.trim();
-    if (!nextTitle || nextTitle === task.title) {
+    const next = draftTitle.trim();
+    if (!next || next === task.title) {
       setDraftTitle(task.title);
       setIsEditing(false);
       return;
     }
-    const updated = await onEditTitle(task.id, nextTitle);
-    if (updated) {
-      setIsEditing(false);
-    }
+    const ok = await onEditTitle(task.id, next);
+    if (ok) setIsEditing(false);
   };
 
   const handleCancel = () => {
@@ -30,6 +28,7 @@ function TaskItem({ task, onToggle, onDelete, onEditTitle, disabled }) {
           checked={task.completed}
           onChange={() => onToggle(task.id, !task.completed)}
           disabled={disabled}
+          aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
         />
         {isEditing ? (
           <input
@@ -40,9 +39,9 @@ function TaskItem({ task, onToggle, onDelete, onEditTitle, disabled }) {
               if (e.key === "Enter") handleSave();
               if (e.key === "Escape") handleCancel();
             }}
-            autoFocus
             disabled={disabled}
             aria-label="Edit task title"
+            autoFocus
           />
         ) : (
           <span className={`task-title ${task.completed ? "completed" : ""}`}>
@@ -53,26 +52,43 @@ function TaskItem({ task, onToggle, onDelete, onEditTitle, disabled }) {
       <div className="task-actions">
         {isEditing ? (
           <>
-            <button className="icon-btn save-btn" onClick={handleSave} disabled={disabled}>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={handleSave}
+              disabled={disabled}
+            >
               Save
             </button>
-            <button className="icon-btn cancel-btn" onClick={handleCancel} disabled={disabled}>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={handleCancel}
+              disabled={disabled}
+            >
               Cancel
             </button>
           </>
         ) : (
           <button
+            type="button"
             className="icon-btn edit-btn"
             onClick={() => setIsEditing(true)}
             disabled={disabled}
+            title="Edit title"
             aria-label={`Edit ${task.title}`}
-            title="Edit task title"
           >
-            ✎
+            Edit
           </button>
         )}
-        <button className="delete-btn" onClick={() => onDelete(task.id)} disabled={disabled}>
-          ✕
+        <button
+          type="button"
+          className="delete-btn"
+          onClick={() => onDelete(task.id)}
+          disabled={disabled}
+          aria-label="Delete task"
+        >
+          {"\u00d7"}
         </button>
       </div>
     </div>

@@ -6,14 +6,8 @@ function TaskForm({ onAdd, disabled }) {
   const handleSubmit = async (e) => {
     e?.preventDefault();
     if (!title.trim() || disabled) return;
-    const wasAdded = await onAdd(title.trim());
-    if (wasAdded) {
-      setTitle("");
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSubmit();
+    const ok = await onAdd(title.trim());
+    if (ok) setTitle("");
   };
 
   return (
@@ -23,11 +17,11 @@ function TaskForm({ onAdd, disabled }) {
         placeholder="Add a new task..."
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={handleKeyDown}
         disabled={disabled}
+        aria-label="New task title"
       />
       <button type="submit" disabled={disabled || !title.trim()}>
-        {disabled ? "Adding..." : "Add"}
+        {disabled ? "Working..." : "Add"}
       </button>
     </form>
   );
