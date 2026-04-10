@@ -1,119 +1,137 @@
-# Full Stack Developer Technical Assignment
+# Task Manager
 
-Expected duration: 1-2 hours
+A small full-stack task manager built as a practical assignment. The application lets a user create, view, update, filter, and delete tasks through a React frontend and a FastAPI backend.
 
-Thank you for applying. This assignment is designed to assess practical full stack skills across frontend, backend, API design, and general code quality. Please focus on a working solution with clean structure rather than advanced styling or unnecessary complexity.
+## Overview
 
-## Assignment Summary
+This project was intentionally kept compact so the focus stays on core full-stack fundamentals:
 
-Build a small Task Manager application with a frontend and backend.
+- clean component structure
+- simple REST API design
+- validation and error handling
+- basic persistence trade-offs
+- a usable, responsive interface
 
-## What We Are Looking For
+The backend stores tasks in memory, while the frontend mirrors the list in `localStorage` so the UI stays useful after a refresh during development.
 
-Clear structure, working API integration, basic validation, and thoughtful error handling.
-
----
-
-## 1. Objective
-
-Build a simple Task Manager app that allows a user to create, view, update, and delete tasks. The goal is to evaluate both frontend and backend fundamentals within a short, practical exercise.
-
----
-
-## 2. Core Requirements
+## Tech Stack
 
 ### Frontend
-- Display a list of tasks.
-- Provide a form to add a new task.
-- Allow a task to be marked as completed.
-- Allow a task to be deleted.
-- Show loading and error states where appropriate.
+
+- React 19
+- Vite
+- Plain CSS
+- Browser `localStorage` for local cache
 
 ### Backend
-- Expose a simple REST API.
-- Handle basic validation for incoming data.
-- Return clear JSON responses.
-- Organize code in a clean and readable structure.
 
----
+- FastAPI
+- Pydantic
+- Uvicorn
 
-## 3. API Endpoints
+### Testing and Tooling
 
-| Method | Endpoint       | Description           |
-|--------|----------------|-----------------------|
-| GET    | /tasks         | Return all tasks.     |
-| POST   | /tasks         | Create a new task.    |
-| PATCH  | /tasks/:id     | Update a task status. |
-| DELETE | /tasks/:id     | Delete a task.        |
+- Pytest for backend tests
+- Docker and Docker Compose for containerized startup
 
----
+## Features
 
-## 4. Task Data Model
+### Core Features
 
-| Field      | Type / Notes             |
-|------------|--------------------------|
-| id         | Unique identifier        |
-| title      | Task title               |
-| completed  | Boolean status           |
-| createdAt  | Timestamp or date string |
+- Create tasks with validation
+- View all tasks in a task list
+- Mark a task as completed or active
+- Delete tasks with confirmation
+- Show loading and error states
+- Return structured JSON responses from the API
 
----
+### Bonus Features Included
 
-## 5. Technical Notes
+- Filter tasks by all, active, or completed
+- Edit a task title inline
+- Persist task state in `localStorage` for reloads
+- Backend tests for API behavior
+- Docker support for both frontend and backend
 
-- You may use any reasonable stack. Examples: React, Vue, Angular, or plain JavaScript on the frontend; Node.js, Laravel, Django, Spring Boot, or similar on the backend.
-- A database is optional. In-memory storage or simple file-based storage is acceptable for this exercise.
-- Keep the interface simple. Functionality, structure, and correctness matter more than visual design.
-- Please include a short README with setup and run instructions.
+## Project Structure
 
-> **Important:** Keep the solution intentionally small. The assignment is expected to be completed in 1-2 hours, so scope control is part of the exercise.
+```text
+TaskManager/
+├── backend/
+│   ├── main.py
+│   ├── tests/
+│   ├── Dockerfile
+│   ├── pyproject.toml
+│   └── uv.lock
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── vite.config.js
+├── docker-compose.yml
+└── README.md
+```
 
----
+## How It Works
 
-## 6. What We Will Evaluate
+### Frontend Flow
 
-| Area     | What We Assess                                                                          |
-|----------|-----------------------------------------------------------------------------------------|
-| Frontend | Component structure, state handling, API integration, form behavior, and user feedback. |
-| Backend  | API design, routing, validation, response structure, and code organization.             |
-| General  | Readability, naming, separation of concerns, basic error handling, and completeness.    |
+The React app fetches the task list on load, renders it in a clean card layout, and sends API calls for task creation, completion toggles, deletion, and title editing. It also keeps a cached copy in `localStorage` so tasks remain visible immediately on refresh while the API reconnects.
 
----
+### Backend Flow
 
-## 7. Optional Bonus
+The FastAPI app exposes a simple REST API with validation on incoming data. Each task includes:
 
-Only attempt bonus items if the core requirements are complete.
+- `id`
+- `title`
+- `completed`
+- `createdAt`
 
-- Filter tasks by completed or incomplete status.
-- Edit an existing task title.
-- Persist tasks after refresh.
-- Add basic tests.
-- Provide a simple Docker setup.
+The backend returns clear JSON responses and handles common error cases like missing tasks or invalid update payloads.
 
----
+## API Endpoints
 
-## 8. Submission
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/tasks` | Return all tasks |
+| POST | `/tasks` | Create a new task |
+| PATCH | `/tasks/{id}` | Update completion status or title |
+| DELETE | `/tasks/{id}` | Delete a task |
 
-- A repository link containing the source code.
-- A README with setup and run instructions.
-- A short note describing any assumptions or trade-offs made.
+## Setup Instructions
 
----
+### Prerequisites
 
-> **Submission note:** Please submit a working solution that reflects your normal coding approach for a small feature. We value clarity, correctness, and sensible trade-offs.
+- Python 3.13+
+- Node.js 22+
+- npm
+- uv
+- Docker and Docker Compose if you want containerized startup
 
----
+### 1. Clone the repository
 
-## Local Run Commands
+```bash
+git clone <your-repo-url>
+cd TaskManager
+```
 
-### Backend
+### 2. Run the backend locally
 
 ```bash
 cd backend
 uv run uvicorn main:app --reload
 ```
 
-### Frontend
+Backend URL:
+
+- http://localhost:8000
+
+API docs:
+
+- http://localhost:8000/docs
+
+### 3. Run the frontend locally
 
 ```bash
 cd frontend
@@ -121,18 +139,60 @@ npm install
 npm run dev
 ```
 
-### Run Backend Tests
+Frontend URL:
+
+- http://localhost:5173
+
+## Testing
+
+Run backend tests with:
 
 ```bash
 cd backend
 uv run pytest
 ```
 
-### Docker (Bonus)
+Current test coverage includes:
+
+- task creation and listing
+- empty title validation
+- patching task completion and title
+- rejecting empty patch payloads
+- deleting tasks
+
+## Docker
+
+You can run both services together with Docker Compose:
 
 ```bash
 docker compose up --build
 ```
 
-- Frontend: [http://localhost:5173](http://localhost:5173)
-- Backend: [http://localhost:8000](http://localhost:8000)
+This starts:
+
+- backend on port `8000`
+- frontend on port `5173`
+
+## Configuration Notes
+
+- The frontend reads the API URL from `VITE_API_URL` when provided.
+- The default API fallback is `http://127.0.0.1:8000` for local development.
+- The backend allows localhost and `127.0.0.1` origins for Vite development.
+
+## Trade-offs
+
+- Task storage is in memory, so data resets when the backend restarts.
+- Frontend persistence uses `localStorage`, which is enough for this assignment but not a substitute for a real database.
+- The UI is intentionally simple and focused on usability rather than visual complexity.
+
+## Assumptions
+
+- The assignment is meant to stay small and practical.
+- A database is not required.
+- Bonus items were added only where they fit the scope without making the project unnecessarily heavy.
+
+## Useful Links
+
+- Frontend app: http://localhost:5173
+- Backend API: http://localhost:8000
+- Backend docs: http://localhost:8000/docs
